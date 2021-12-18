@@ -6,6 +6,8 @@ authors = ["pengfei <liu.pengfei@hotmail.fr>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+SQLAlchemy = "^1.4.28"
+ipython-sql = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0.0"
