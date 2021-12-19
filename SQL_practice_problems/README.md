@@ -9,6 +9,10 @@ exports specialty foods from around the world. The Northwind database is an exce
 small-business ERP, with customers, orders, inventory, purchasing, suppliers, shipping, employees, and single-entry
 accounting. The Northwind database has since been ported to a variety of non-Microsoft databases including PostgreSQL.
 
+Below figure shows the schema of the database 
+
+![northwind_schema](https://raw.githubusercontent.com/pengfei99/LearningSQL/main/SQL_practice_problems/img/northwind_schema.PNG)
+
 ## 1.1 Setup database
 
 ```postgresql
