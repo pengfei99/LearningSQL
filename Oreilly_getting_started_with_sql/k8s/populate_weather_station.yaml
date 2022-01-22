@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-db
+  labels:
+    app: db-backup-restore
+spec:
+  template:
+    spec:
+      containers:
+        - name: populate-bot
+          image: liupengfei99/db_backup_restore:main
+          env:
+            - name: DB_LOGIN
+              value: "user-pengfei" # your database login, example: user-pengfei
+            - name: DB_PWD
+              value: "" # your database pwd, example: afde3434gfe3r
+            - name: DB_HOST
+              value: "postgresql-124499" # your database server host name, example: 127.0.0.1
+            - name: DB_PORT
+              value: "5432"     # your database server port, example: 5432
+            - name: AWS_S3_ENDPOINT
+              value: "minio.lab.sspcloud.fr" # your s3 server endpoint, example: minio.lab.sspcloud.fr
+            - name: AWS_ACCESS_KEY_ID
+              value: ""  # your s3 server access key id, example:
+            - name: AWS_SECRET_ACCESS_KEY
+              value: ""  # your s3 server secret key, example:
+            # The token is optional based on your s3 creds type, you can leave it empty
+            - name: AWS_SESSION_TOKEN
+              value: ""    # your s3 server access token, example:
+            - name: BACKUP_FILE
+              value: "s3://pengfei/tmp/sql_backup/weather_stations.sql" # the full path of your backup file, example: s3://path/to/sql_backup/2022-01-12_test_pg_bck.sql
+            - name: TARGET_DB
+              value: "weather_stations" # the database name that you want to restore, example: north_wind
+          command: [sh, -c]
+          args: ["python dbsavior/main.py --db_type postgres --storage_type s3 --action populate --db_login $DB_LOGIN 
+                --db_pwd $DB_PWD --db_host $DB_HOST --db_port $DB_PORT
+                --backup_file $BACKUP_FILE --target_db $TARGET_DB"]
+      restartPolicy: Never
+  completions: 1
+
+  parallelism: 1
+  activeDeadlineSeconds: 100
+  ttlSecondsAfterFinished: 150
+  backoffLimit: 4
