@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: auto-restore-db
+  labels:
+    app: db-backup-restore
+spec:
+  template:
+    spec:
+      containers:
+        - name: restore-bot
+          image: liupengfei99/db_backup_restore:main
+          imagePullPolicy: Always
+          env:
+            - name: DB_LOGIN
+              value: "user-pengfei"
+            - name: DB_PWD
+              value: "changeMe"
+            - name: DB_HOST
+              value: "postgresql-124499"
+            - name: DB_PORT
+              value: "5432"
+            - name: AWS_S3_ENDPOINT
+              value: "minio.lab.sspcloud.fr"
+            - name: AWS_ACCESS_KEY_ID
+              value: "s3_service_account"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "changeMe"
+            # The token is optional based on your s3 creds type, you can leave it empty
+            - name: AWS_SESSION_TOKEN
+              value: ""
+            - name: BACKUP_DIR
+              value: "s3://pengfei/tmp/sql_backup"
+            - name: TARGET_DB
+              value: "test"
+          command: [sh, -c]
+          args: ["python dbsavior/main.py --db_type postgres --storage_type s3 --action auto_restore --db_login $DB_LOGIN 
+                  --db_pwd $DB_PWD --db_host $DB_HOST --db_port $DB_PORT
+                  --backup_dir $BACKUP_DIR --target_db $TARGET_DB"]
+      restartPolicy: Never
+  # A job's spec are immutable, we can't change them after job creation. We need to delete old job, and submit new job.
+  # completions default value is 1, it means if 1 pod complete and return 0. The job is considered finished succesfully.
+  completions: 1
+  # parallelism default value is 1, it means 1 pod can run in parallel.
+  parallelism: 1
+  # set a dead line to retry the job.
+  activeDeadlineSeconds: 100
+  # auto remove the job after the job finished
+  ttlSecondsAfterFinished: 150
+  backoffLimit: 4
