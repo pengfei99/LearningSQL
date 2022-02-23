@@ -1,0 +1,34 @@
+{
+    "name": "Initiation à SQL",
+    "abstract": "Cours introductif à SQL : fondamentaux du langage",
+    "authors": ["inseefrlab"],
+    "contributors": ["Pengfei Liu"],
+    "types": ["Notebook Python"],
+    "tags": ["discover", "learn"],
+    "category": "datascience with R and Python",
+    "imageUrl": "https://raw.githubusercontent.com/InseeFrLab/www.sspcloud.fr/main/src/app/assets/img/python.jpg",
+    "sections": {
+        "introduction": {
+            "name": "Introduction",
+            "abstract": "Introduction de l'auto-formation \"Initiation à SQL\" du SSP Cloud",
+            "chapters": []
+        },
+        "fundamentals": {
+            "name": "Fondamentaux du langage",
+            "abstract": "Présentation de la syntaxe SQL",
+            "chapters": [
+                "Recuperation de données",
+                "Filtrage de données"
+            ]
+        },
+        "manipulation": {
+            "name": "Modelisation de données",
+            "abstract": "Exploration, manipulation et visualisation de données",
+            "chapters": [
+                "modules-files",
+                "csv-json-files",
+                "numpy"
+            ]
+        }
+    }
+}
