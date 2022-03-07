@@ -196,6 +196,132 @@ where extract(year from shipped_date)=1997
 group by month;
 ```
 
+### 3.3.3 SUM
+
+SUM() est une autre opération d'agrégation courante. Pour trouver la somme des frais de livraison de chaque mois de 
+l'année 1997, exécutez la requête ci-dessous :
+
+```python
+%%sql
+select extract(month from shipped_date) as month, 
+       sum(freight) as total_freight 
+from orders 
+where extract(year from shipped_date)=1997 
+group by month;
+```
+
+### 3.3.4 plusieurs fonctions d'agrégation dans une requête
+
+Il n'y a **aucune limite quant au nombre d'opérations d'agrégation que vous pouvez utiliser dans une seule requête**.
+La requête ci-dessous peut trouver le total_freight, max_freight et avg_freight pour chaque mois de l'année 1997 dans une seule requête.
+
+```python
+%%sql
+select extract(month from shipped_date) as month,
+sum(freight) as total_freight,
+max(freight) as max_freight,
+avg(freight) as avg_freight
+from orders
+where extract(year from shipped_date)=1997
+group by month;
+```
+
+### 3.3.5 Utiliser where pour obtenir des agrégations spécifiques
+
+Nous pouvons obtenir des agrégations très **spécifiques en tirant parti de WHERE**. Si vous vouliez le coût total de 
+livraison par an de toutes les commandes expédiées par la société 1, il vous suffirait de filtrer sur ship_via=1. 
+La requête ci-dessous ne comptera que les frais de livraison des commandes expédiées par la société 1.
+
+```python
+%%sql
+select extract(year from shipped_date) as year,
+sum(freight) as total_number1_freight
+from orders
+where extract(year from shipped_date)>=1996 and ship_via=1
+group by year;
+```
+
+## 3.4 Le clause having
+
+Nous pouvons utiliser **where** pour filtrer les lignes qui satisfont à certaines conditions. Mais nous ne pouvons 
+pas l'utiliser pour filtrer les valeurs agrégées.
+
+**Le fonctionnement de l'agrégation est que le serveur de DB traite ligne par ligne, trouvant ceux qu'il souhaite 
+conserver en fonction de la condition WHERE. Après, il analyse les enregistrements sur GROUP BY et exécute toutes 
+les fonctions d'agrégation, telles que SUM(). Si nous voulions filtrer sur la valeur SUM(), nous aurions besoin que 
+le filtre ait lieu après le calcul de SUM().**
+
+Pour filtrer la valeur agrégée, nous devons utiliser **HAVING**. HAVING est l'équivalent de WHERE pour les valeurs agrégé. 
+Le mot-clé WHERE filtre les enregistrements individuels, mais HAVING filtre les agrégations.
+
+La requête ci-dessous ne retourne que les lignes qui ont avg(freight)>30
+
+```sql
+select extract(month from shipped_date) as month,
+avg(freight) as avg_freight
+from orders
+where extract(year from shipped_date)=1997
+group by month
+having avg_freight>30;
+```
+Notez que la requête ci-dessus ne s'exécutera pas dans postgres. Parce que **certaines plates-formes (y compris Oracle, 
+Postgresql)** ne prennent pas en charge les alias dans l'instruction HAVING (tout comme GROUP BY). Cela signifie que 
+vous devez spécifier à nouveau la fonction d'agrégation dans l'instruction HAVING.
+
+Par exemple, pour exécuter la requête ci-dessus dans postgres, vous devez écrire la requête comme ci-dessous
+
+```python
+%%sql
+select extract(month from shipped_date) as month,
+avg(freight) as avg_freight
+from orders
+where extract(year from shipped_date)=1997
+group by month
+having avg(freight)>30;
+```
+
+
+## 3.5 Obtenir les enregistrements distinct
+
+Il n'est pas rare de vouloir un ensemble de valeurs distincts à partir d'une column. Vous pouvez utiliser **distinct()** 
+ou **distinct** pour obtenir des valeurs distinctes d'une colonne.
+
+Les deux requêtes ci-dessous renvoient le même résultat.
+
+```python 
+%%sql
+select distinct(customer_id) from orders limit 5;
+```
+
+
+```python 
+%%sql
+select distinct customer_id from orders limit 5;
+```
+ 
+Nous savons qu'il y a 830 enregistrements dans la table `orders`. Mais supposons que nous voulions obtenir une 
+liste distincte des valeurs de customer_id, comment pouvons-nous l'obtenir ? Nous pouvons combiner la fonction 
+d'agrégation avec distinct. La requête ci-dessous est un exemple
+
+```python
+%%sql
+select count(distinct(customer_id)) from orders;
+```
+
+Nous pouvons appliquer l'opérateur `distinct` sur plusieurs colonnes. La requête ci-dessous est un exemple.
+
+```python
+%%sql
+select distinct customer_id, ship_via from orders limit 5;
+```
+
+Mais lorsque nous appliquons distinct sur plusieurs colonnes, **nous ne pouvons plus utiliser la version distinct()**. 
+Essayez la requête ci-dessous, vous remarquerez qu'elle regroupera toutes les colonnes dans () en tant qu'ensemble.
+
+```python
+%%sql
+select distinct(customer_id, ship_via) from orders limit 5;
+```
 
 ## Exercices
 
