@@ -1,31 +1,22 @@
 ---
-title: "Recuperation de données"
-abstract: "Recuperation de données dans une base de données en utilisant sql"
+title: "Jointure de données"
+abstract: "Jointure de données dans une base de données en utilisant sql"
 ---
 
-Dans ce tutoriel, nous allons nous intéresser à comment recupere de données dans une base de données.
+Dans ce tutoriel, nous allons nous intéresser à comment joindre de données dans une base de données.
 
-## Introduction SQL
+## Les relations entre les tables
+Avant de parler de jointure, nous devons comprendre les relations entre les tables. Il existe trois types de relations :
 
-SQL est un langage qui a été développé dans les années 60, sur les bases théoriques du `Dr Codd`, dans le but de 
-dialoguer avec les grandes banques de données. Les premières versions utilisables ont été développées par IBM et 
-Oracle (à l'époque Relational Software) dans les années 70. Il a été adopté comme une norme ISO en 1987, et depuis 
-plusieurs révisions se sont succédées : SQL-89, SQL-92, SQL-99, SQL:2003 et SQL:2008. La version sous laquelle nous 
-vivons actuellement est **SQL:2011**, adoptée en décembre 2011.
+- un à un : un enregistrement dans une table est lié à un enregistrement dans une autre table.
+- un-à-plusieurs : un enregistrement dans une table est lié à plusieurs enregistrements dans une autre table.
+- plusieurs à plusieurs : plusieurs enregistrements d'une table sont liés à plusieurs enregistrements d'une autre table.
 
+**La gestion d'une relation un-à-un ou d'une relation un-à-plusieurs peut être effectuée en ajoutant la clé primaire 
+d'une table dans l'autre table en tant que clé étrangère.** Pour réunir les deux tables, nous devons utiliser 
+la jointure sur la clé primaire et la clé étrangère.
 
-Malgré les efforts de standardisation, les différents serveurs des bases de données ont développé leur propre SQL.
-Ces différences peuvent apparaître à trois niveaux :
-
-- Le serveur ne supporte pas certaines fonctionnalités, et les instructions SQL correspondantes n’ont pas été implémentées ;
-
-- Les types de données ne correspondent pas toujours en syntaxe d’un serveur à l’autre, ou certains serveurs supportent des types de données différents, ou encore ont leur propre syntaxe de déclaration (c'est notamment le cas pour les dates) ;
-
-- Certaines fonctions n’ont tout simplement pas la même syntaxe d'un serveur à l'autre.
-
-**SQL n'est pas case sensitive, donc vous pouvez ignore la majuscule et miniscule**
-
-### Connecter sur une base de données
+## Connecter sur une base de données
 
 Exécuter cette cellule pour connecter sur base de données **north_wind**. Vous devez modifier le login, pwd, db_url.
 
@@ -37,137 +28,132 @@ Exécuter cette cellule pour connecter sur base de données **north_wind**. Vous
 %sql postgresql://login:pwd@db_url/north_wind
 ```
 
-## Extraire des données 
-**Select** est la requête, le plus utilise pour extraire des données d'une table La forme la plus simple de la commande 
-select est la suivante.
+## Un example de relation un-à-plusieurs
 
-```text
-SELECT [DISTINCT] [nom_de_table.]nom_de_colonne | * | expression [AS alias_de_colonne], ...
-    FROM nom_de_table [AS alias_de_table]
-   [WHERE predicat]
-   [ORDER  BY nom_de_colonne [ASC |  DESC], ...
-```
-
-Par exemple, la requête ci-dessous extraire tous les columns et lignes de table customers. Comme nous avons mentionné avant,
-sql n'est pas **case-sensitive**, donc les deux requêtes devent retourne exactement la meme réponse.
-
-Dans la requête, le "*" signifie tous les columns et **customers** est le nom de table que nous voulons interroger.
-
-```python
-%%sql
-select * from customers limit 5;
-```
+Regardons les colonnes des tables **CUSTOMERs** et **ORDERS**, et vous remarquerez qu'il s'agit d'une relation 
+un-à-plusieurs. Parce qu'un client peut avoir plusieurs commandes en cours.
 
 ```python
 %%sql
 SELECT * FROM CUSTOMERS LIMIT 5;
 ```
-
-Essayer de récupérer le contenu de la table produits
-
 ```python
 %%sql
-
-
+select * from ORDERS limit 5;
 ```
 
-### 1.1.1 Sélectionner des colonnes spécifiques
+Vous pouvez remarquer dans la table CUSTOMERS, le customer_id est la **clé primaire**. Dans la table ORDERS, customer_id est la **clé étrangère.**
 
-Nous pouvons également donner des noms de colonne pour récupérer des données à partir de colonnes spécifiques. 
-La commande ci-dessous ne récupère que les données de la colonne product_id et quantity_per_unit.
+## Types de jointure
+
+Il existe sept types de jointure courants, vous pouvez les vérifier dans la figure ci-dessous. Nous en discuterons un par un
+
+![sql_join_type_chart](https://raw.githubusercontent.com/pengfei99/LearningSQL/main/Oreilly_getting_started_with_sql/img/sql_join_type_chart.png) 
 
 ```python
 %%sql
 select product_id, quantity_per_unit from products;
 ```
 
-### 1.1.2 Effectuer des opérations sur les colonnes sélectionnées
+## Pourquoi normalisons-nous les données ?
 
-Nous pouvons également effectuer des opérations (e.g. des opérateurs mathématiques (+, -,*,/,%), 
-des opérateurs de texte (||, ), des opérateurs SQL (count(),
-ronde, etc.), etc.) sur une colonne.
+Vous vous demandez peut-être pourquoi nous séparons les données dans des tableaux et les fusionnons ?
 
-Par exemple, supposons que le taux de taxe d'un produit est de 15 %, la commande ci-dessous obtiendra non seulement le 
-prix, mais également la taxe du produit
+- Parce que grâce à la normalisation, nous pouvons stocker les données efficacement, pas de doublons signifie moins d'erreurs et facile à entretenir.
+- Fusionnez des tables ensemble peut créer des vues plus descriptives des données. Et ça peut faciliter l'analyse des données.
 
-```python
-%%sql
-select product_id, unit_price, unit_price*0.15 as tax from products;
-```
+## Présentation des relations entre les tables
 
-Notez qu'à l'intérieur d'une opération, **vous ne pouvez pas utiliser le résultat qui est calculé au même niveau**. 
-Par exemple, la requête ci-dessous est erronée, car tax est calculé en même temps que total_price. Et il n'y a aucune 
-garantie que le calcul de taxe se terminera avant total_price. Donc total_price ne peut pas utiliser la taxe comme 
-argument d'entrée.
+Dans ce tutoriel, nous allons apprendre à fusionner différentes tables. En conséquence, la relation entre les tables devient importante. Ci-dessous la figure
+montre la relation entre les tables dans notre base de données de test.
 
-```python
-%%sql
+![northwind_schema](https://raw.githubusercontent.com/pengfei99/LearningSQL/main/SQL_practice_problems/img/northwind_schema.PNG)
 
-select product_id, unit_price, unit_price*0.15 as tax, unit_price+tax as total_price from products;
-```
+## Inner join
 
-La requête ci-dessous renverra correctement le resultat de total_price
+**L'INNER JOIN nous permet de fusionner deux tables ensemble**. Mais si nous allons fusionner des tables, 
+nous devons définir un point commun entre les deux afin d'aligner les enregistrements des deux tables. Autrement dit,
+nous devons **identifier une ou plusieurs colonnes communes entre les deux tables**.
 
-```python
-%%sql
-select product_id, unit_price, unit_price*1.15 as total_price from products limit 5;
-```
+En général, dans une relation un-à-plusieurs, les colonnes communes sont **la clé primaire du un** et **la clé étrangère
+du plusieurs**. Dans notre cas, pour la table CUSTOMERS et ORDERS, la colonne commune est **customer_id**
 
-**Remarque, n'utilisez pas d'espace dans le nom de la colonne, l'alias ou quoi que ce soit, utilisez _ à la place. Parce que sql considère l'espace comme délimiteur de string.**
-
-### 1.1.3 Opérations multiples sur les colonnes sélectionnées
-
-Nous pouvons également combiner plusieurs opérations sur une colonne. La requête ci-dessous obtient le prix total, 
-mais ne conserve que deux chiffres après la virgule. Pour l'instant, vous n'avez pas besoin de comprendre **:: numeric(16,2)**.
-C'est pour la conversion de type, car le type de la colonne d'origine est réel, mais la fonction round ne prend que 
-float comme argument. Nous devons donc convertir le type.
+Imaginons que nous voulions savoir comment contacter le client qui a passé la commande par téléphone. Mais vous 
+pouvez remarquer qu'il n'y a pas d'informations sur le téléphone dans la table ORDERS. Nous devons donc joindre la 
+table CUSTOMERS et ORDERS pour obtenir le numéro de téléphone. La requête ci-dessous est un exemple de **Inner join.**
 
 
 ```python
 %%sql
-select product_id, unit_price, round((unit_price*1.15):: numeric(16,2),2) as total_price from products limit 5;
+
+select order_id, customers.customer_id,
+order_date,
+phone
+from customers
+inner join orders
+on customers.customer_id= orders.customer_id
+limit 5;
 ```
 
-### 1.1.4 Renommer la colonne de sortie
+Dans la requête sql ci-dessus, la première chose que vous pouvez remarquer est que nous devons utiliser une syntaxe 
+explicite **customers.customer_id** ou **orders.customer_id**. Parce que cette colonne existe dans les deux tables. 
+Si nous ne spécifions pas explicitement le nom de la table, le serveur de base de données ne peut pas déterminer 
+quelle table doit être utilisée. Pour le nom de colonne qui n'existe que dans une seule table (par exemple, phone, order_date), 
+nous n'avons pas besoin de spécifier le nom de la table.
 
-Dans l'exemple ci-dessus, les colonnes unit_price et total_price prêtent à confusion. Nous voulons donc les renommer en **UNTAXED_PRICE et TAXED_PRICE**.
+Apres l'instruction **FROM est l'endroit où nous exécutons notre INNER JOIN**. Nous spécifions que nous tirons de la 
+table `CUSTOMERS` et que nous la joignons en interne avec `ORDERS` , et que le point commun entre les deux tables se 
+trouve dans la colonne `CUSTOMER_ID`.
+
+
+Remarque importante : **avec INNER JOIN , tous les enregistrements qui n'ont pas de valeur jointe commune dans les 
+deux tables seront exclus**. Si un client n'a pas de commande, il sera exclu de la table fusionnée.
+
+Si nous voulons inclure tous les enregistrements de la table CUSTOMERS, nous devons utiliser un LEFT JOIN
+
+### Alias de nom de table
+
+The explicite table name could be very annoying if the table name is extremely long. In that case, we can use an alias 
+to replace the full table name. In below query, we use `c` as alias of the table `customers`, and `o` as alias of the 
+table `orders`. As a result, we can use `c.customer_id` to replace `customers.customer_id`. 
+
 
 ```python
 %%sql
-select product_id, unit_price as UNTAXED_PRICE, unit_price*1.15 as TAXED_PRICE from products limit 5;
+
+select order_id, c.customer_id,
+order_date,
+phone
+from customers c
+inner join orders o
+on c.customer_id= o.customer_id
+limit 5;
 ```
 
-## 1.2 Concaténation de texte
+### Alias with wildcard
 
-Nous avons vu l'opérateur arithmétique ci-dessus, nous pouvons également appliquer l'opérateur de texte sur les colonnes.
+We can use * after a table name alias as wildcard to select all columns of a table. In below query, we use o.* to select all columns of table ORDERS
 
-Par exemple, vous pouvez concaténer les champs CONTACT_NAME, city et country de la table CUSTOMERS ainsi que mettre 
-une virgule et un espace entre eux pour créer une valeur LOCATION
 
-Le **||** est l'opérateur de concaténation de texte, il peut concaténer deux string à une. La requête ci-dessous utilise 
-deux opérateurs de concaténation pour concaténer trois string (c'est-à-dire ville , ', ' et pays).
+```python
+%%sql
 
-Notez que certains serveurs de base de données font la différence entre " et ' (par exemple, postgresql). 
-Utilisez ' si vous le pouvez lorsque vous spécifiez des string dans l'instruction sql, cela peut éviter de nombreuses erreurs inattendues
+select o.*, c.*
+from customers c
+inner join orders o
+on c.customer_id= o.customer_id
+limit 5;
+```
+
+## 1.2 Left join
+
+
 
 ```python
 %%sql
 select CONTACT_NAME, city || ', '|| country from customers limit 5;
 ```
 
-Nous pouvons concaténer autant de chaînes que vous le souhaitez. Dans l'exemple ci-dessous, nous utilisons sept string pour créer une adresse complète.
-```python
-%%sql
-SELECT CONTACT_NAME,
-address || ', ' || city || ', '|| country AS SHIP_ADDRESS
-FROM CUSTOMERS limit 5;
-```
-
-
-```python
-%%sql
-
-```
 
 
 ```python
