@@ -49,9 +49,9 @@ SELECT [DISTINCT] [nom_de_table.]nom_de_colonne | * | expression [AS alias_de_co
 ```
 
 Par exemple, la requête ci-dessous extraire tous les columns et lignes de table customers. Comme nous avons mentionné avant,
-sql n'est pas **case-sensitive**, donc les deux requêtes deven retourne exactement la meme réponse.
+sql n'est pas **case-sensitive**, donc les deux requêtes devent retourne exactement la meme réponse.
 
-Dans la requête, le "*" signifie all columns et **customers** est le nom de table que nous voulons interroger.
+Dans la requête, le "*" signifie tous les columns et **customers** est le nom de table que nous voulons interroger.
 
 ```python
 %%sql
@@ -63,7 +63,7 @@ select * from customers limit 5;
 SELECT * FROM CUSTOMERS LIMIT 5;
 ```
 
-Try to retrieve the content of table products
+Essayer de récupérer le contenu de la table produits
 
 ```python
 %%sql
@@ -71,32 +71,34 @@ Try to retrieve the content of table products
 
 ```
 
-### 1.1.1 Select specific columns
+### 1.1.1 Sélectionner des colonnes spécifiques
 
-We can also give column names to retrieve data from specific columns. Below command only retrieves data of column 
-product_id and quantity_per_unit.
+Nous pouvons également donner des noms de colonne pour récupérer des données à partir de colonnes spécifiques. 
+La commande ci-dessous ne récupère que les données de la colonne product_id et quantity_per_unit.
 
 ```python
 %%sql
 select product_id, quantity_per_unit from products;
 ```
 
-### 1.1.2 Do operations on selected columns
+### 1.1.2 Effectuer des opérations sur les colonnes sélectionnées
 
-We can also perform operations (e.g. mathematical operators(+,-,*,/,%), text operators(||, ),sql operators(count(), 
-round, etc.), etc.) on a column.
+Nous pouvons également effectuer des opérations (e.g. des opérateurs mathématiques (+, -,*,/,%), 
+des opérateurs de texte (||, ), des opérateurs SQL (count(),
+ronde, etc.), etc.) sur une colonne.
 
-For example, suppose the tax rate of a product is 15%, below command will get not only the price, but also the tax of 
-the product
+Par exemple, supposons que le taux de taxe d'un produit est de 15 %, la commande ci-dessous obtiendra non seulement le 
+prix, mais également la taxe du produit
 
 ```python
 %%sql
 select product_id, unit_price, unit_price*0.15 as tax from products;
 ```
 
-Note, inside one operation, **you can not use the result that is calculated at the same level**, for example below query is wrong, because
-tax is calculated at the same time of total_price. And there is no guaranty that the tax will finish before total_price. So total_price
-can not use tax as input argument.
+Notez qu'à l'intérieur d'une opération, **vous ne pouvez pas utiliser le résultat qui est calculé au même niveau**. 
+Par exemple, la requête ci-dessous est erronée, car tax est calculé en même temps que total_price. Et il n'y a aucune 
+garantie que le calcul de taxe se terminera avant total_price. Donc total_price ne peut pas utiliser la taxe comme 
+argument d'entrée.
 
 ```python
 %%sql
@@ -104,50 +106,56 @@ can not use tax as input argument.
 select product_id, unit_price, unit_price*0.15 as tax, unit_price+tax as total_price from products;
 ```
 
-Below query will return the total_price correctly
+La requête ci-dessous renverra correctement le resultat de total_price
 
 ```python
 %%sql
 select product_id, unit_price, unit_price*1.15 as total_price from products limit 5;
 ```
 
-**Note, don't use space in column name, alias or whatever, use _ instead. Because sql consider space as delimiter of string.**
+**Remarque, n'utilisez pas d'espace dans le nom de la colonne, l'alias ou quoi que ce soit, utilisez _ à la place. Parce que sql considère l'espace comme délimiteur de string.**
 
-### 1.1.3 Multiple operations on selected columns
+### 1.1.3 Opérations multiples sur les colonnes sélectionnées
 
-We can also combine multi operations on a column. Below query get the total price but only keeps two digits after. 
-For now, you don't need to understand the **:: numeric(16,2)**. That's for type casting, because origin column 
-type is real, but function round only takes float as argument. So we need to convert the type.
+Nous pouvons également combiner plusieurs opérations sur une colonne. La requête ci-dessous obtient le prix total, 
+mais ne conserve que deux chiffres après la virgule. Pour l'instant, vous n'avez pas besoin de comprendre **:: numeric(16,2)**.
+C'est pour la conversion de type, car le type de la colonne d'origine est réel, mais la fonction round ne prend que 
+float comme argument. Nous devons donc convertir le type.
+
 
 ```python
 %%sql
 select product_id, unit_price, round((unit_price*1.15):: numeric(16,2),2) as total_price from products limit 5;
 ```
 
-### 1.1.4 Rename output column
+### 1.1.4 Renommer la colonne de sortie
 
-In the above example, the column unit_price and total_price are confusing. So we want to rename them as **UNTAXED_PRICE and TAXED_PRICE**.
+Dans l'exemple ci-dessus, les colonnes unit_price et total_price prêtent à confusion. Nous voulons donc les renommer en **UNTAXED_PRICE et TAXED_PRICE**.
 
 ```python
 %%sql
 select product_id, unit_price as UNTAXED_PRICE, unit_price*1.15 as TAXED_PRICE from products limit 5;
 ```
 
-## 1.2 Text concatenation
+## 1.2 Concaténation de texte
 
-We have seen arithmetic operator above, we can also apply text operator on columns. For instance, you can concatenate the address, city and country fields from the CUSTOMERS table as well as put a comma and space between them to create a LOCATION value
+Nous avons vu l'opérateur arithmétique ci-dessus, nous pouvons également appliquer l'opérateur de texte sur les colonnes.
 
-The **||** is the text concatenation operator, it can concatenate two string to one. Below query uses two concatenation operator to concatenate
-three string (i.e. city , ', ' and country).
+Par exemple, vous pouvez concaténer les champs CONTACT_NAME, city et country de la table CUSTOMERS ainsi que mettre 
+une virgule et un espace entre eux pour créer une valeur LOCATION
 
-Note certain database server do make difference between " and ' (e.g. postgresql). Use ' if you can when you specify strings in sql statement, this can avoid many unexpected errors
+Le **||** est l'opérateur de concaténation de texte, il peut concaténer deux string à une. La requête ci-dessous utilise 
+deux opérateurs de concaténation pour concaténer trois string (c'est-à-dire ville , ', ' et pays).
+
+Notez que certains serveurs de base de données font la différence entre " et ' (par exemple, postgresql). 
+Utilisez ' si vous le pouvez lorsque vous spécifiez des string dans l'instruction sql, cela peut éviter de nombreuses erreurs inattendues
 
 ```python
 %%sql
 select CONTACT_NAME, city || ', '|| country from customers limit 5;
 ```
 
-We can concatenate as much string as you want, below example we use seven string to build a complete address.
+Nous pouvons concaténer autant de chaînes que vous le souhaitez. Dans l'exemple ci-dessous, nous utilisons sept string pour créer une adresse complète.
 ```python
 %%sql
 SELECT CONTACT_NAME,
@@ -171,11 +179,7 @@ FROM CUSTOMERS limit 5;
 ### Questions de compréhension
 
 - Pourquoi dit-on des listes et des tuples que ce sont des conteneurs ?
-- Quel est le point commun entre les listes et les chaînes de caractères ?
-- Comment est enregistré l'ordre des éléments dans une séquence en Python ?
-- Quelle est la différence fondamentale entre une liste et un tuple ?
-- Dans quel cas aura-t-on plutôt intérêt à utiliser un tuple qu'une liste ?
-- Peut-on avoir des éléments de types différents (ex : `int` et `string`) dans une même liste ? Dans un même tuple ?
+
 
 Si les réponses à ces questions ne sont pas encore claires, n'hésitez pas à revenir au tutoriel, ou bien à tester par vous-même dans une cellule.
 
