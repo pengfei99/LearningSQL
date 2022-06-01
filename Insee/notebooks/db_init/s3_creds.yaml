@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dbsavior-job-s3-secrets
+type: Opaque
+stringData:
+  AWS_S3_ENDPOINT: minio.lab.sspcloud.fr
+  AWS_ACCESS_KEY_ID: changeMe
+  AWS_SECRET_ACCESS_KEY: changeMe
+  AWS_SESSION_TOKEN: changeMe
