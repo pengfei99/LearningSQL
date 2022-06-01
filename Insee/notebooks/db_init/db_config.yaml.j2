@@ -3,8 +3,8 @@ kind: ConfigMap
 metadata:
   name: dbsavior-job-init-configmap
 data:
-  DB_LOGIN: "changeMe"
-  DB_PWD: "changeMe"
-  DB_HOST: "changeMe"
+  DB_LOGIN: "{{ db_login }}"
+  DB_PWD: "{{ db_pwd }}"
+  DB_HOST: "{{ db_host }}"
   DB_PORT: "5432"
   TARGET_DB: "defaultdb" # the database name that you want to restore, example: defaultdb

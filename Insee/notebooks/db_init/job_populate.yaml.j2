@@ -12,7 +12,7 @@ spec:
           image: liupengfei99/db_backup_restore:main
           env:
             - name: BACKUP_FILE
-              value: "s3://projet-formation/diffusion/sda/06_SQL/north_wind.sql"  # the full path of the db backup file, example: s3://path/to/sql_backup/2022-01-12_test_pg_bck.sql
+              value: "{{ sql_file_path }}"  # the full path of the db backup file, example: s3://path/to/sql_backup/2022-01-12_test_pg_bck.sql
           envFrom:
             - configMapRef:
                 name: dbsavior-job-init-configmap
